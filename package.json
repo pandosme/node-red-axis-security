@@ -1,0 +1,32 @@
+{
+  "name": "node-red-contrib-axis-security",
+  "version": "0.5.0",
+  "description": "Axis Security Management",
+  "author": {
+    "name": "Fred Juhlin",
+    "email": "fred.juhlin@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pandosme/node-red-axis-security/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "vapix-wrapper": "^0.4.0"
+  },
+  "deprecated": false,
+  "homepage": "https://github.com/pandosme/node-red-axis-security",
+  "keywords": ["node-red","Axis","security"],
+  "node-red": {
+    "nodes": {
+      "axis-security": "axis-security.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pandosme/node-red-axis-security.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
