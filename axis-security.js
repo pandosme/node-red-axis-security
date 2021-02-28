@@ -11,12 +11,7 @@ module.exports = function(RED) {
 		node.on('input', function(msg) {
 			node.status({});
 
-			var device = {
-				address: null,
-				user: null,
-				password: null,
-				protocol: "http"
-			}
+			var device = {address: null,user: null,password: null,protocol: "http"}
 
 			var preset = RED.nodes.getNode(node.preset);
 			if( preset ) {
@@ -32,8 +27,10 @@ module.exports = function(RED) {
 			var action = msg.action || node.action;
 			var options = node.options || msg.options;
 			var data = node.data || msg.payload;
+
+//			console.log("axis-security", {action: action,options: options,data: data});
+
 			msg.error = false;
-			
 			switch( action ) {
 				case "List accounts":
 					VapixWrapper.Account_List( device,function(error, response){
@@ -54,7 +51,7 @@ module.exports = function(RED) {
 				break;
 
 				case "Remove account":
-					if( !options || typeof options === "string" || options.length === 0 ) {
+					if( !options || typeof options !== "string" || options.length === 0 ) {
 						msg.error = "Invalid input";
 						msg.payload = "Set option to account name";
 						node.send(msg);
