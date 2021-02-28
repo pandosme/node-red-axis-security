@@ -1,3 +1,4 @@
-# node-red-contrib-axis-acap
+# node-red-contrib-axis-security
 
-ACAP Management Simplification
+Simplify security management of Axis device in Node-RED
+

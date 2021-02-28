@@ -45,6 +45,7 @@ module.exports = function(RED) {
 
 				case "Set account":
 					//options can be JSON string or object and must include name,password & priviliges
+//					console.log(action, options);
 					VapixWrapper.Account_Set( device, options, function(error, response){
 						msg.error = error;
 						msg.payload = response;
@@ -53,6 +54,12 @@ module.exports = function(RED) {
 				break;
 
 				case "Remove account":
+					if( !options || typeof options === "string" || options.length === 0 ) {
+						msg.error = "Invalid input";
+						msg.payload = "Set option to account name";
+						node.send(msg);
+						return;
+					}
 					VapixWrapper.Account_Remove( device, options, function(error, response){
 						msg.error = error;
 						msg.payload = response;
@@ -69,12 +76,12 @@ module.exports = function(RED) {
 				break;
 				
 				case "Request CSR":
-					if(!options || t) {
+					if(!data) {
 						msg.error = "Invalid input";
 						msg.payload = "Missing CSR data";
 						node.send(msg);
 					}
-					VapixWrapper.Certificates_CSR( device, options, function(error, response){
+					VapixWrapper.Certificates_CSR( device, data, function(error, response){
 						msg.error = error;
 						msg.payload = response;
 						node.send(msg);
