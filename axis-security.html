@@ -10,8 +10,13 @@
             <option value="List accounts">List accounts</option>
             <option value="Set account">Set account</option>
             <option value="Remove account">Remove account</option>
+            <option value="Set common hardening">Set common hardening</option>
+            <option value="Enforce HTTPS">Enforce HTTPS</option>
+            <option value="Set IP whitelist">Set IP whitelist</option>
             <option value="List certificates">List certificates</option>
             <option value="Request CSR">Request CSR</option>
+            <option value="Install signed certificate">Install signed certificate</option>
+            <option value="Install P12 certificate">Install P12 certificate</option>
 		</select>
 	</div>
 
@@ -62,7 +67,31 @@ RED.nodes.registerType('axis-security',{
 					$(".input_data").hide();
 					$(".input_options").show();
 				break;
+				case "Set common hardening":
+					$(".input_data").hide();
+					$(".input_options").show();
+				break;
+				case "Enforce HTTPS":
+					$(".input_data").hide();
+					$(".input_options").show();
+				break;
+				case "Set IP whitelist":
+					$(".input_data").hide();
+					$(".input_options").show();
+				break;
+				case "List certificates":
+					$(".input_data").hide();
+					$(".input_options").show();
+				break;
 				case "Request CSR":
+					$(".input_data").hide();
+					$(".input_options").show();
+				break;
+				case "Install signed certificate":
+					$(".input_data").hide();
+					$(".input_options").show();
+				break;
+				case "Install P12 certificate":
 					$(".input_data").hide();
 					$(".input_options").show();
 				break;
@@ -86,6 +115,12 @@ RED.nodes.registerType('axis-security',{
 	<dl class="message-properties">
 		<dt>Action<span class="property-type">string</span></dt>
 		<dd>Use <code>msg.action</code> to override config</dd>
+		<ul>		
+			<li><b>Set IP whitelist:</b><br/>
+			Enables or disable authorized IP addresses that the device will respond to.<br/>
+			Options or <code>msg.options</code> needs to be an array of valid IPv4 addresses ["1.2.3.4",...]. Any other value or type will disable IP whitelist.
+			</li>
+		</ul>
 	</dl>	
 
 	<dl class="message-properties">

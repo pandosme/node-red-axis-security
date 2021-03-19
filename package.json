@@ -1,7 +1,7 @@
 {
   "name": "node-red-contrib-axis-security",
-  "version": "0.9.8",
-  "description": "Axis Security Management",
+  "version": "1.0.0",
+  "description": "Axis device security management",
   "author": {
     "name": "Fred Juhlin",
     "email": "fred.juhlin@gmail.com"
@@ -12,7 +12,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "vapix-wrapper": "^1.0.0"
+    "vapix-wrapper": "^1.1.0"
   },
   "deprecated": false,
   "homepage": "https://github.com/pandosme/node-red-axis-security",
