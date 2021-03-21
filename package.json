@@ -12,7 +12,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "vapix-wrapper": "^1.1.0"
+    "vapix-wrapper": "^1.2.0"
   },
   "deprecated": false,
   "homepage": "https://github.com/pandosme/node-red-axis-security",
