@@ -11,12 +11,10 @@
             <option value="Set account">Set account</option>
             <option value="Remove account">Remove account</option>
             <option value="Set common hardening">Set common hardening</option>
-            <option value="Enforce HTTPS">Enforce HTTPS</option>
             <option value="Set IP whitelist">Set IP whitelist</option>
             <option value="List certificates">List certificates</option>
-            <option value="Request CSR">Request CSR</option>
-            <option value="Install signed certificate">Install signed certificate</option>
-            <option value="Install P12 certificate">Install P12 certificate</option>
+            <option value="HTTPS">HTTPS</option>
+            <option value="802.1X EAP-TLS">802.1X EAP-TLS</option>
 		</select>
 	</div>
 
@@ -29,6 +27,11 @@
         <label for="node-input-options"><i class="icon-tag"></i> Options</label>
         <input type="text" id="node-input-options" placeholder="">
     </div>
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="optional">
+    </div>
 	
 </script>
 
@@ -37,6 +40,7 @@ RED.nodes.registerType('axis-security',{
 	category: 'Axis',
 	color: '#FFCC33',
 	defaults: {
+		name: { value:""},
 		preset: {type:"axis-preset"},
 		address: {value:""},
 		action: { value:"List accounts"},
@@ -47,7 +51,7 @@ RED.nodes.registerType('axis-security',{
 	inputs:1,
 	outputs:1,
 	label: function() {
-		return this.action || "axis-security";
+		return this.name || this.action || "Axis Security";
 	},
 	oneditprepare: function() {
 		$("#node-input-action").change(function() {
@@ -71,27 +75,11 @@ RED.nodes.registerType('axis-security',{
 					$(".input_data").hide();
 					$(".input_options").show();
 				break;
-				case "Enforce HTTPS":
-					$(".input_data").hide();
-					$(".input_options").show();
-				break;
 				case "Set IP whitelist":
 					$(".input_data").hide();
 					$(".input_options").show();
 				break;
 				case "List certificates":
-					$(".input_data").hide();
-					$(".input_options").show();
-				break;
-				case "Request CSR":
-					$(".input_data").hide();
-					$(".input_options").show();
-				break;
-				case "Install signed certificate":
-					$(".input_data").hide();
-					$(".input_options").show();
-				break;
-				case "Install P12 certificate":
 					$(".input_data").hide();
 					$(".input_options").show();
 				break;
@@ -116,15 +104,52 @@ RED.nodes.registerType('axis-security',{
 		<dt>Action<span class="property-type">string</span></dt>
 		<dd>Use <code>msg.action</code> to override config</dd>
 		<ul>		
+			<li><b>List accounts:</b><br/>
+			Lists all accounts in device.
+			</li>
+			<li><b>Set account:</b><br/>
+			Adds or updates an account.  Privilege levels are Viewer, Operator and Admin.<br/>
+			Options (msg.options): <code>{"name":"","password":"","privileges":"Admin"}</code>
+			</li>
+			<li><b>Remove account:</b><br/>
+			Remove an account.<br/>
+			Options (msg.options): <code>name (string)</code>
+			</li>
+			<li><b>Set common hardening:</b><br/>
+			Control common services to harden daily operation systems.  Select on or more properties to control.
+			Options (msg.options): <code>{"discovery":false,"maintenance":false,"forceHTTPS":true}</code><br/>
+			<b>discovery</b> controls announcing the device on UPnP, Bonjour and ZeroConf (link-local)<br/>
+			<b>maintenance</b> controls SSH, FTP server and edit-CGI (/admin-bin/editcgi.cgi?file=) used for advanced maintenance<br/>
+			<b>forceHTTPS</b> forces clients to use HTTPS <i>Note: HTTPS needs to be enabled first</i><br/>
+			</li>
 			<li><b>Set IP whitelist:</b><br/>
-			Enables or disable authorized IP addresses that the device will respond to.<br/>
-			Options or <code>msg.options</code> needs to be an array of valid IPv4 addresses ["1.2.3.4",...]. Any other value or type will disable IP whitelist.
+			Simple firewall.  Defines a list of authorized/trusted IP addresses that the Axis device will respond to. Request from other clients will be ignored.<br/>
+			<i>Note: Make sure you include your Node-RED IP address in the list.  If you lock out yourself you may need to factory default the device</i>
+			Options (msg.options): <code>["1.2.3.4",...]</code>. Any other value or type will disable IP whitelist.
+			</li>
+			<li><b>List certificates:</b><br/>
+			List all installed certificates.
+			</li>
+			<li><b>HTTPS:</b><br/>
+			Configures HTTPS (TLS).<br/>
+			msg.payload: <code>{"cert":"PEM data","key":"PEM data"}</code><br/>
+			</li>
+			<li><b>802.1X EAP-TLS:</b><br/>
+			Set client certificate, CA and configuration.
+			msg.payload: <code>{"cert":"PEM data","key":"PEM data","CA_name":"CA NiceName","CA_cert":"PEM data","EAP_identity":"some-id","EAPOL_version":3}</code><br/>
 			</li>
 		</ul>
 	</dl>	
 
 	<dl class="message-properties">
 		<dt>Options<span class="property-type">string | object | buffer</span></dt>
+		<dd>Depends on action<br/>
+		Use <code>msg.options</code> to override config.
+		</dd>
+	</dl>	
+
+	<dl class="message-properties">
+		<dt>Data<span class="property-type">string | object | buffer</span></dt>
 		<dd>Depends on action<br/>
 		Use <code>msg.payload</code> to override config.
 		</dd>

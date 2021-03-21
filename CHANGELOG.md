@@ -1,4 +1,2 @@
-## Changelog
-
-### Version 0.9.8
-Beta version for validation
+## Version 1.0.0
+Initial commit
