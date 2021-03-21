@@ -30,8 +30,6 @@ module.exports = function(RED) {
 			var options = node.options || msg.options;
 			var data = node.data || msg.payload;
 
-//			console.log("axis-security", {action: action,options: options,data: data});
-
 			msg.error = false;
 			switch( action ) {
 				case "List accounts":
@@ -43,10 +41,8 @@ module.exports = function(RED) {
 				break;
 
 				case "Set account":
-					console.log("Set account",options);
 					if( typeof options === "string" )
 						options = JSON.parse(options);
-					console.log("Set account",options);
 					
 					if( !options ) {
 						msg.error = "Invalid input";
@@ -76,10 +72,8 @@ module.exports = function(RED) {
 				break;
 
 				case "Set common hardening":
-					console.log("Set common hardening",options,typeof options);
 					if( typeof options === "string" )
 						options = JSON.parse(options);
-					console.log("Set common hardening",options,typeof options);
 					if( typeof options !== "object") {
 						msg.error = "Invalid input";
 						msg.payload = "Set options object properties";
@@ -96,7 +90,6 @@ module.exports = function(RED) {
 						node.send(msg);
 						return;
 					}
-					console.log("Set common hardening: Number of Settings ",numberOfSetttings);
 					
 					for( var name in options ) {
 						switch( name ) {
@@ -107,12 +100,10 @@ module.exports = function(RED) {
 								} else {
 									cgi = "/axis-cgi/param.cgi?action=update&Network.UPnP.Enabled=no&Network.Bonjour.Enabled=no&Network.ZeroConf.Enabled=no";
 								}
-								console.log("Set common hardening: " + name, setting,cgi);
 								VapixWrapper.CGI( device, cgi, function(error,response ) {
 									msg.error = error;
 									msg.payload = response;
 									numberOfSetttings--;
-									console.log("Set common hardening: Number of Settings ",numberOfSetttings);
 									if( numberOfSetttings <= 0 ) {
 										node.send(msg);
 										return;
@@ -126,12 +117,10 @@ module.exports = function(RED) {
 								} else {
 									cgi = "/axis-cgi/param.cgi?action=update&Network.SSH.Enabled=no&Network.FTP.Enabled=no&System.EditCgi=no";
 								}
-								console.log("Set common hardening: " + name, setting,cgi);
 								VapixWrapper.CGI( device, cgi, function(error,response ) {
 									msg.error = error;
 									msg.payload = response;
 									numberOfSetttings--;
-									console.log("Set common hardening: Number of Settings ",numberOfSetttings);
 									if( numberOfSetttings <= 0 ) {
 										node.send(msg);
 										return;
@@ -145,12 +134,10 @@ module.exports = function(RED) {
 								} else {
 									cgi = "/axis-cgi/param.cgi?action=update&System.BoaGroupPolicy.admin=both&System.BoaGroupPolicy.operator=both&System.BoaGroupPolicy.viewer=both";
 								}
-								console.log("Set common hardening: " + name, setting,cgi);
 								VapixWrapper.CGI( device, cgi, function(error,response ) {
 									msg.error = error;
 									msg.payload = response;
 									numberOfSetttings--;
-									console.log("Set common hardening: Number of Settings ",numberOfSetttings);
 									if( numberOfSetttings <= 0 ) {
 										node.send(msg);
 										return;
@@ -159,7 +146,6 @@ module.exports = function(RED) {
 							break;
 							default:
 								numberOfSetttings--;
-								console.log("Set common hardening: Number of Settings ",numberOfSetttings);
 								if( numberOfSetttings <= 0 ) {
 									node.send(msg);
 									return;
@@ -195,9 +181,7 @@ module.exports = function(RED) {
 					}
 					var cgi = "/axis-cgi/param.cgi?action=update&root.Network.Filter.Enabled=" + whitelist;
 					cgi += "&root.Network.Filter.Input.AcceptAddresses=" + list;
-					console.log("Set IP whitelist:",cgi);
 					VapixWrapper.CGI( device, cgi, function(error,response ) {
-						console.log("Set IP whitelist:",error,response);
 						msg.error = error;
 						msg.payload = response;
 						node.send(msg);
