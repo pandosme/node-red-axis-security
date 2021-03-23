@@ -41,6 +41,7 @@ module.exports = function(RED) {
 				break;
 
 				case "Set account":
+//					console.log(action,device,options);
 					if( typeof options === "string" )
 						options = JSON.parse(options);
 					
@@ -96,9 +97,9 @@ module.exports = function(RED) {
 							case "discovery":
 								setting = options[name];
 								if( setting === true ) {
-									cgi = "/axis-cgi/param.cgi?action=update&Network.UPnP.Enabled=yes&Network.Bonjour.Enabled=yes&Network.ZeroConf.Enabled=yes";
+									cgi = "/axis-cgi/param.cgi?action=update&Network.UPnP.Enabled=yes&Network.Bonjour.Enabled=yes&Network.ZeroConf.Enabled=yes&WebService.DiscoveryMode.Discoverable=Yes";
 								} else {
-									cgi = "/axis-cgi/param.cgi?action=update&Network.UPnP.Enabled=no&Network.Bonjour.Enabled=no&Network.ZeroConf.Enabled=no";
+									cgi = "/axis-cgi/param.cgi?action=update&Network.UPnP.Enabled=no&Network.Bonjour.Enabled=no&Network.ZeroConf.Enabled=no&WebService.DiscoveryMode.Discoverable=No";
 								}
 								VapixWrapper.CGI( device, cgi, function(error,response ) {
 									msg.error = error;
@@ -158,8 +159,20 @@ module.exports = function(RED) {
 				
 				case "Set IP whitelist":
 				    var ipFormat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+					if( typeof options === "string" )
+						options = JSON.parse(options);
+					
+					if( !options ) {
+						msg.error = "Invalid input";
+						msg.payload = "Set whitelist options";
+						node.send(msg);
+						return;
+					}
+
 					var whitelist = "no";
 					var list = "";
+						
 					if( Array.isArray(options) && options.length > 0 ) {
 						if( !ipFormat.test(options[0]) ) {
 							msg.error = "Invalid input";
@@ -181,6 +194,7 @@ module.exports = function(RED) {
 					}
 					var cgi = "/axis-cgi/param.cgi?action=update&root.Network.Filter.Enabled=" + whitelist;
 					cgi += "&root.Network.Filter.Input.AcceptAddresses=" + list;
+//					console.log(cgi);
 					VapixWrapper.CGI( device, cgi, function(error,response ) {
 						msg.error = error;
 						msg.payload = response;

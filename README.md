@@ -3,6 +3,9 @@
 
 Simplify security management of Axis device in Node-RED.
 
+## Dependencies
+Install [node-red-contrib-axis-device](https://flows.nodered.org/node/node-red-contrib-axis-device) before installing this node.
+
 ## Axis Security
 Common operations of any Axis Device
 * List accounts
