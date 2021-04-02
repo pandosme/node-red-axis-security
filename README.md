@@ -14,5 +14,8 @@ Common operations of any Axis Device
 * Set common hardening (Discovery, SSH, FTP, and more)
 * Set IP Whitelist (IP Tables)
 * List installed certificates
+* Request CSR from device
+* Install signed certificate from previous CSR
+* Remove certificate
 * HTTPS - Install server certificate (with key) and configures HTTPS
 * 802.1X - Install client certificate (with key), CA certificate and configure the client
