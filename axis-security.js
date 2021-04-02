@@ -145,6 +145,24 @@ module.exports = function(RED) {
 									}
 								});
 							break;
+							case "browser":
+								setting = options[name];
+								if( setting === true ) {
+									cgi = "/axis-cgi/param.cgi?action=update&System.BoaGroupPolicy.admin=https&System.BoaGroupPolicy.operator=https&System.WebInterfaceDisabled=no";
+								} else {
+									cgi = "/axis-cgi/param.cgi?action=update&System.BoaGroupPolicy.admin=both&System.BoaGroupPolicy.operator=both&System.WebInterfaceDisabled=yes";
+								}
+								VapixWrapper.CGI( device, cgi, function(error,response ) {
+									msg.error = error;
+									msg.payload = response;
+									numberOfSetttings--;
+									if( numberOfSetttings <= 0 ) {
+										node.send(msg);
+										return;
+									}
+								});
+							break;
+							
 							default:
 								numberOfSetttings--;
 								if( numberOfSetttings <= 0 ) {
@@ -266,7 +284,159 @@ module.exports = function(RED) {
 						});
 					});
 				break;
+				
+				case "Generate CSR":
+					var csr = data;
+					if( typeof crs === "string" )
+						csr = JSON.parse(data);
+					
+					if( !csr || typeof csr !== "object" ) {
+						msg.error = "Invalid input";
+						msg.payload = "Check CSR property syntax";
+						node.send( msg );
+						return;
+					}
+					if( !csr.hasOwnProperty('CN') ) {
+						msg.error = "Invalid input";
+						msg.payload = "Missing CN (Common Name)";
+						node.send( msg );
+						return;
+					}
+					node.status({fill:"blue",shape:"dot",text:"Requesting CSR..."});
 
+					var fromTime = new Date();
+					days = 365;
+					if( csr.hasOwnProperty('days') )
+						days = csr.days;
+					var toTime = new Date( fromTime.getTime() + (days * 3600 * 24 * 1000) );
+					var validFrom = fromTime.toISOString().split('.')[0];
+					var validTo = toTime.toISOString().split('.')[0]
+
+					var subject = '<acertificates:Subject>\n';
+					subject +=	'<acert:CN>' + csr.CN + '</acert:CN>\n';
+					if( csr.hasOwnProperty('C'))
+						subject += '<acert:C>' + csr.C + '</acert:C>\n';
+					if( csr.hasOwnProperty('L'))
+						subject += '<acert:L>' + csr.L + '</acert:L>\n';
+					if( csr.hasOwnProperty('O'))
+						subject += '<acert:O>' + csr.O + '</acert:O>\n';
+					if( csr.hasOwnProperty('OU'))
+						subject += '<acert:OU>' + csr.OU + '</acert:OU>\n';
+					if( csr.hasOwnProperty('ST'))
+						subject += '<acert:ST>' + csr.ST + '</acert:ST>\n';
+					subject +=	'</acertificates:Subject>\n';
+
+					var soapBody = '<acertificates:CreateCertificate2 xmlns="http://www.axis.com/vapix/ws/certificates">\n';
+					soapBody += '<acertificates:Id>CSR_' + validFrom + '</acertificates:Id>\n';
+					soapBody += subject;
+					soapBody += '<acertificates:ValidNotBefore>' + validFrom + '</acertificates:ValidNotBefore>\n'
+					soapBody += '<acertificates:ValidNotAfter>' + validTo + '</acertificates:ValidNotAfter>\n';
+					soapBody += '</acertificates:CreateCertificate2>\n';
+					
+					VapixWrapper.SOAP( device, soapBody, function(error,certResponse) {
+						msg.error = error;
+						if( !error ) {
+							node.status({fill:"green",shape:"dot",text:"CSR complete"});
+							if( certResponse.hasOwnProperty("acertificates:CreateCertificate2Response") ) {
+								var soapBody = '<acertificates:GetPkcs10Request2 xmlns="http://www.axis.com/vapix/ws/certificates">\n';
+								soapBody += '<acertificates:Id>CSR_' + validFrom + '</acertificates:Id>\n';
+								soapBody += subject;
+								soapBody += '</acertificates:GetPkcs10Request2>\n';
+								VapixWrapper.SOAP( device, soapBody, function(error,response) {
+									msg.error = error;
+									if( !error ) {
+										node.status({fill:"green",shape:"dot",text:"CSR complete"});
+										msg.payload = response;
+										if( response.hasOwnProperty("acertificates:GetPkcs10Request2Response") ) {
+											var rows = response["acertificates:GetPkcs10Request2Response"]["acertificates:Pkcs10Request"].match(/.{1,64}/g);
+											var PEM = "-----BEGIN CERTIFICATE REQUEST-----\n";
+											rows.forEach(function(row) {
+												PEM += row + '\n';
+											});
+											PEM += "-----END CERTIFICATE REQUEST-----\n";
+											msg.payload = PEM;
+											msg.csrID = 'CSR_' + validFrom;
+											node.send(msg);
+											return;
+										}
+									}
+									node.status({fill:"red",shape:"dot",text:"CSR request failed"});
+									msg.payload = "Unable to request CSR";
+									node.send(msg);
+									return;
+								});
+							}
+						} else {
+							node.status({fill:"red",shape:"dot",text:"CSR request failed"});
+							msg.payload = "Unable to request CSR";
+							node.send(msg);
+							return;
+						}
+					});
+				break;
+
+				case "Install Certificate":
+					var PEM = data;
+					if( !PEM || typeof PEM !== "string" ) {
+						msg.error = "Invalid input";
+						msg.payload = "Invalid Cert PEM format";
+						node.send( msg );
+						return;
+					}
+					if( PEM.search("-----BEGIN CERTIFICATE-----") < 0 || PEM.search("-----END CERTIFICATE-----") < 0 ) {
+						msg.error = "Invalid input";
+						msg.payload = "Invalid Cert PEM format";
+						node.send( msg );
+						return;
+					}
+					//STUPID ONVIF again...why not accepting standard PEM fomrating?!!!!!!!
+					PEM = PEM.replace("-----BEGIN CERTIFICATE-----","");
+					PEM = PEM.replace("-----END CERTIFICATE-----","");
+					
+					var ID = "CERT_" + new Date().toISOString().split('.')[0];
+					
+					var soapBody = '<tds:LoadCertificates xmlns="http://www.onvif.org/ver10/device/wsdl">';
+					soapBody += '<NVTCertificate><tt:CertificateID>' + ID + '</tt:CertificateID>';
+					soapBody += '<tt:Certificate>';
+					soapBody += '<tt:Data>';
+					soapBody += PEM;
+					soapBody += '</tt:Data>';
+					soapBody += '</tt:Certificate>';
+					soapBody += '</NVTCertificate>';
+					soapBody += '</tds:LoadCertificates>';
+
+					VapixWrapper.SOAP( device, soapBody, function(error,response) {
+						msg.error = error;
+						msg.payload = response;
+						msg.certID;
+						if( !error )
+							msg.payload = "Certificate installed";
+						node.send(msg);
+						return;
+					});
+				break;
+
+				case "Remove Certificate":
+					var ID = data;
+					if( !ID || typeof ID !== "string" || ID.length < 2 || ID.length > 60) {
+						msg.error = "Invalid input";
+						msg.payload = "Invalid certificate ID";
+						node.send( msg );
+						return;
+					}
+					var soapBody = '<tds:DeleteCertificates xmlns="http://www.onvif.org/ver10/device/wsdl">';
+					soapBody += '<CertificateID>' + ID + '</CertificateID>';
+					soapBody += '</tds:DeleteCertificates>';
+					VapixWrapper.SOAP( device, soapBody, function(error,response) {
+						msg.error = error;
+						msg.payload = response;
+						if( !error )
+							msg.payload = "Certificate removed";
+						node.send(msg);
+						return;
+					});
+				break;
+				
 				case "802.1X EAP-TLS":
 					data = msg.payload;
 					if( !data || typeof data !== "object" ||

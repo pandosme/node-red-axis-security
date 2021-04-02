@@ -13,6 +13,9 @@
             <option value="Set common hardening">Set common hardening</option>
             <option value="Set IP whitelist">Set IP whitelist</option>
             <option value="List certificates">List certificates</option>
+            <option value="Generate CSR">Generate CSR</option>
+            <option value="Install Certificate">Install Certificate</option>
+            <option value="Remove Certificate">Remove Certificate</option>
             <option value="HTTPS">HTTPS</option>
             <option value="802.1X EAP-TLS">802.1X EAP-TLS</option>
 		</select>
@@ -83,6 +86,18 @@ RED.nodes.registerType('axis-security',{
 					$(".input_data").hide();
 					$(".input_options").show();
 				break;
+				case "Generate CSR":
+					$(".input_data").show();
+					$(".input_options").hide();
+				break;
+				case "Install Certificate":
+					$(".input_data").show();
+					$(".input_options").hide();
+				break;
+				case "Remove Certificate":
+					$(".input_data").show();
+					$(".input_options").hide();
+				break;
 				default:
 					$(".input_data").hide();
 					$(".input_options").hide();
@@ -108,8 +123,14 @@ RED.nodes.registerType('axis-security',{
 			Lists all accounts in device.
 			</li>
 			<li><b>Set account:</b><br/>
-			Adds or updates an account.  Privilege levels are Viewer, Operator and Admin.<br/>
-			Options (msg.options): <code>{"name":"","password":"","privileges":"Admin"}</code>
+			Adds or updates an account.  Valid privilege levels are Viewer, Operator and Admin.<br/>
+			Options (msg.options): <code><br/>
+			{<br/>
+			&nbsp;&nbsp;"name":"",<br/>
+			&nbsp;&nbsp;"password":"",<br/>
+			&nbsp;&nbsp;"privileges":"Admin"<br/>
+			}<br/>
+			</code>
 			</li>
 			<li><b>Remove account:</b><br/>
 			Remove an account.<br/>
@@ -117,10 +138,18 @@ RED.nodes.registerType('axis-security',{
 			</li>
 			<li><b>Set common hardening:</b><br/>
 			Control common services to harden daily operation systems.  Select on or more properties to control.
-			Options (msg.options): <code>{"discovery":false,"maintenance":false,"forceHTTPS":true}</code><br/>
-			<b>discovery</b> controls announcing the device on UPnP, Bonjour and ZeroConf (link-local)<br/>
+			Options (msg.options): <code><br/>
+			{<br/>
+			&nbsp;&nbsp;"discovery":false,<br/>
+			&nbsp;&nbsp;"maintenance":false,<br/>
+			&nbsp;&nbsp;"forceHTTPS":true,<br/>
+			&nbsp;&nbsp;"browser":true,<br/>			
+			}<br/>
+			</code>
+			<b>discovery</b> controls announcing the device on UPnP, Bonjour, WS Discovery and ZeroConf (link-local)<br/>
 			<b>maintenance</b> controls SSH, FTP server and edit-CGI (/admin-bin/editcgi.cgi?file=) used for advanced maintenance<br/>
 			<b>forceHTTPS</b> forces clients to use HTTPS <i>Note: HTTPS needs to be enabled first</i><br/>
+			<b>browser</b> controls if Web Browser are authorized to access.  If set to false, only clients using the VAPIX/ONVIF API will work.<br/>
 			</li>
 			<li><b>Set IP whitelist:</b><br/>
 			Simple firewall.  Defines a list of authorized/trusted IP addresses that the Axis device will respond to. Request from other clients will be ignored.<br/>
@@ -130,13 +159,50 @@ RED.nodes.registerType('axis-security',{
 			<li><b>List certificates:</b><br/>
 			List all installed certificates.
 			</li>
+			<li><b>Generate CSR:</b><br/>
+			Request device to generate a Certificate Signing Request.  A self-signed certificate will be generated that may be used without signing.  CN (Common Name) is required, other properties are optional.
+			Data (msg.payload): <code><br/>
+			{<br/>
+			&nbsp;&nbsp;"CN":"host.domain.com",<br/>
+			&nbsp;&nbsp;"C":"US",<br/>
+			&nbsp;&nbsp;"L":"Some locality city or other"<br/>
+			&nbsp;&nbsp;"O":"Acme Inc"<br/>
+			&nbsp;&nbsp;"OU":"IT Department"<br/>
+			&nbsp;&nbsp;"ST":"State or province name"<br/>
+			&nbsp;&nbsp;"days":365<br/>
+			}<br/>
+			</code>
+			Output: msg.csrID will contain the certificate ID of the CSR
+			</li>
+			<li><b>Install certificate:</b><br/>
+			Install a signed certificate from a previous CSR.
+			Data (msg.payload): <code>Certificate in PEM data (Base64 encoded)</code><br/>
+			Output: msg.certID will contain the certificate ID
+			</li>
+			<li><b>Remove certificate:</b><br/>
+			Removes a certificate.  The certificate may not be attached/associated by device HTTPS or 802.1X settings.
+			Data (msg.payload): <code>Certificate ID</code>
+			</li>
 			<li><b>HTTPS:</b><br/>
 			Configures HTTPS (TLS).<br/>
-			msg.payload: <code>{"cert":"PEM data","key":"PEM data"}</code><br/>
+			msg.payload: <code><br/>
+			{<br/>
+			&nbsp;&nbsp;"cert":"PEM data",<br/>
+			&nbsp;&nbsp;"key":"PEM data"<br/>
+			}</code><br/>
 			</li>
 			<li><b>802.1X EAP-TLS:</b><br/>
 			Set client certificate, CA and configuration.
-			msg.payload: <code>{"cert":"PEM data","key":"PEM data","CA_name":"CA NiceName","CA_cert":"PEM data","EAP_identity":"some-id","EAPOL_version":3}</code><br/>
+			msg.payload: <code><br/>
+			{<br/>
+			&nbsp;&nbsp;"cert":"PEM data",<br/>
+			&nbsp;&nbsp;"key":"PEM data",<br/>
+			&nbsp;&nbsp;"CA_name":"CA NiceName",<br/>
+			&nbsp;&nbsp;"CA_cert":"PEM data",<br/>
+			&nbsp;&nbsp;"EAP_identity":"some-id",<br/>
+			&nbsp;&nbsp;"EAPOL_version":3<br/>
+			}<br/>
+			</code>
 			</li>
 		</ul>
 	</dl>	
