@@ -1,3 +1,8 @@
+## Version 1.2.1
+* Minor bug fixes
+* Enhanced documentation
+* Tagged vapix-wrapper 1.2.2
+
 ## Version 1.2.0
 * Added support for requesting CSR (Certificate Signing Request)
 * Added support for installing a signed certificate from a previous CSR.

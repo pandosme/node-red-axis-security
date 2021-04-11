@@ -143,24 +143,24 @@ RED.nodes.registerType('axis-security',{
 			&nbsp;&nbsp;"discovery":false,<br/>
 			&nbsp;&nbsp;"maintenance":false,<br/>
 			&nbsp;&nbsp;"forceHTTPS":true,<br/>
-			&nbsp;&nbsp;"browser":true,<br/>			
+			&nbsp;&nbsp;"browser":true<br/>			
 			}<br/>
 			</code>
-			<b>discovery</b> controls announcing the device on UPnP, Bonjour, WS Discovery and ZeroConf (link-local)<br/>
-			<b>maintenance</b> controls SSH, FTP server and edit-CGI (/admin-bin/editcgi.cgi?file=) used for advanced maintenance<br/>
-			<b>forceHTTPS</b> forces clients to use HTTPS <i>Note: HTTPS needs to be enabled first</i><br/>
-			<b>browser</b> controls if Web Browser are authorized to access.  If set to false, only clients using the VAPIX/ONVIF API will work.<br/>
+			<b>discovery</b> controls device descovery (UPnP, Bonjour, WS Discovery and ZeroConf.  It is recommeded to set this to false after device is added to a system invnetory<br/>
+			<b>maintenance</b> controls device SSH server , FTP server and edit-CGI (/admin-bin/editcgi.cgi?file=) that should only be used during trouble shooting or advanced maintenance. It is recommeded to set this to false during normal operation.<br/>
+			<b>forceHTTPS</b> forces clients to use HTTPS <i>Note: HTTPS needs to be enabled first</i>.  Prevents clients to access the devices using HTTP.  Recomeded setting depends on client capabilities and network exposure.<br/>
+			<b>browser</b> controls if Web Browser are authorized to access.  Vode system/clients can still operate throgh the VAPIX/ONVIF API. Browser should not be allowed to access devices during normal operation.  Recommeded setting is to disable access by Web Browser for large/medium systems with many users.<br/>
 			</li>
 			<li><b>Set IP whitelist:</b><br/>
-			Simple firewall.  Defines a list of authorized/trusted IP addresses that the Axis device will respond to. Request from other clients will be ignored.<br/>
-			<i>Note: Make sure you include your Node-RED IP address in the list.  If you lock out yourself you may need to factory default the device</i>
-			Options (msg.options): <code>["1.2.3.4",...]</code>. Any other value or type will disable IP whitelist.
+			A firewall (IP tables) is a very strong security control that helps mitigate many risks.  Define a list of authorized/trusted IP addresses that the Axis device will respond to. Request from other clients will be ignored.<br/>
+			<i>Note: Make sure to include your Node-RED IP address in the list.  If you lock out administrative clients you may need to factory default the device to regain control</i>
+			Options (msg.options): <code>["1.2.3.4","1.2.3.5",...]</code>. Any other value or empty list will allow all clients.
 			</li>
 			<li><b>List certificates:</b><br/>
 			List all installed certificates.
 			</li>
 			<li><b>Generate CSR:</b><br/>
-			Request device to generate a Certificate Signing Request.  A self-signed certificate will be generated that may be used without signing.  CN (Common Name) is required, other properties are optional.
+			Request device to generate a CSR (Certificate Signing Request).  A self-signed certificate will be generated that you may use as a self-signed certificate.  CN (Common Name) is required, other properties are optional.
 			Data (msg.payload): <code><br/>
 			{<br/>
 			&nbsp;&nbsp;"CN":"host.domain.com",<br/>

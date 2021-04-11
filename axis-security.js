@@ -240,7 +240,7 @@ module.exports = function(RED) {
 					data.cert = data.cert.replace("-----END CERTIFICATE-----","");
 					data.key = data.key.replace("-----BEGIN RSA PRIVATE KEY-----","");
 					data.key = data.key.replace("-----END RSA PRIVATE KEY-----","");
-					var certID = "HTTPS_" + parseInt(new Date().getTime()/1000);
+					var certID = "HTTPS_" + new Date().toISOString().split('.')[0]
 					var body = '<tds:LoadCertificateWithPrivateKey xmlns="http://www.onvif.org/ver10/device/wsdl"><CertificateWithPrivateKey>\n';
 					body += '<tt:CertificateID>' + certID + '</tt:CertificateID>\n';
 					body += '<tt:Certificate>\n<tt:Data>' + data.cert + '</tt:Data>\n</tt:Certificate>\n';
@@ -250,7 +250,9 @@ module.exports = function(RED) {
 						msg.error = error;
 						msg.payload = response;
 						if( error ) {
-							msg.payload = "Cannot install TLS certificate";
+							msg.payload = "Installing certificate failed.";
+							msg.info = response;
+							msg.soap = body;
 							node.send(msg);
 							return;
 						}
@@ -274,11 +276,12 @@ module.exports = function(RED) {
 						body += '</aweb:CertificateSet></Configuration></aweb:SetWebServerTlsConfiguration>';
 						VapixWrapper.SOAP( device, body, function(error,response){
 							msg.error = error;
-							msg.payload = "HTTPS set with certificate " + certID;
+							msg.info = response;
+							msg.soap = body;
 							if( error )
-								msg.payload = "Certificate installed but HTTPS not set";
+								msg.payload = "HTTPS not set but certificate is installed";
 							else
-								
+								ms.payload = "HTTPS is set";
 							node.send(msg);
 							return;
 						});
