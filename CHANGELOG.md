@@ -1,3 +1,6 @@
+## Version 1.2.2
+* Bumped to vapix-wrapper 1.2.6 due to bug fixes
+
 ## Version 1.2.1
 * Minor bug fixes
 * Enhanced documentation
